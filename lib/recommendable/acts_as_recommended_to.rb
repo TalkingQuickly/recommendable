@@ -415,7 +415,7 @@ module Recommendable
         unioned_predictions = "#{self.class}:#{id}:predictions"
         Recommendable.redis.zunionstore unioned_predictions, Recommendable.recommendable_classes.map { |klass| predictions_set_for klass }
         
-        recommendations = Recommendable.redis.zrevrange(unioned_predictions, 0, 10).map do |object|
+        recommendations = Recommendable.redis.zrevrange(unioned_predictions, 0, 100).map do |object|
           klass, id = object.split(":")
           klass.constantize.find(id)
         end
