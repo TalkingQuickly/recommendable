@@ -407,15 +407,17 @@ module Recommendable
       # being the object that self has been found most likely to enjoy.
       #
       # @param [Hash] options the options for returning this list
-      # @option options [Fixnum] :count (10) the number of recommendations to get
+      # @option options [Fixnum] :count (1001) the number of recommendations to get
       # @return [Array] an array of ActiveRecord objects that are recommendable
       def recommendations options = {}
         return [] if likes.count + dislikes.count == 0
 
         unioned_predictions = "#{self.class}:#{id}:predictions"
         Recommendable.redis.zunionstore unioned_predictions, Recommendable.recommendable_classes.map { |klass| predictions_set_for klass }
+
+        options[:count] = 1000 unless options[:count]
         
-        recommendations = Recommendable.redis.zrevrange(unioned_predictions, 0, 100).map do |object|
+        recommendations = Recommendable.redis.zrevrange(unioned_predictions, 0, options[:count]).map do |object|
           klass, id = object.split(":")
           klass.constantize.find(id)
         end
