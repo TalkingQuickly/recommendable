@@ -649,11 +649,15 @@ module Recommendable
       # @param [Class] klass the recommendable type to update predictions for
       # @private
       def update_recommendations_for klass
-        klass.find_each do |object|
-          next if rated?(object) || !object.been_rated? || ignored?(object) || stashed?(object)
-          prediction = predict object
-          Recommendable.redis.zadd(predictions_set_for(object.class), prediction, object.redis_key) if prediction
-        end
+        
+          klass.find_each do |object|
+            begin
+              next if rated?(object) || !object.been_rated? || ignored?(object) || stashed?(object)
+              prediction = predict object
+              Recommendable.redis.zadd(predictions_set_for(object.class), prediction, object.redis_key) if prediction
+            rescue RuntimeError
+            end
+          end
       end
 
       # Predict how likely it is that self will like a passed in object. This
@@ -667,14 +671,17 @@ module Recommendable
       # @return [Float] the probability that self will like object
       # @private
       def predict object
-        liked_by, disliked_by = object.send :create_recommendable_sets
-        rated_by = Recommendable.redis.scard(liked_by) + Recommendable.redis.scard(disliked_by)
-        similarity_sum = 0.0
-        prediction = 0.0
-      
-        Recommendable.redis.smembers(liked_by).inject(similarity_sum) { |sum, r| sum += Recommendable.redis.zscore(similarity_set, r).to_f }
-        Recommendable.redis.smembers(disliked_by).inject(similarity_sum) { |sum, r| sum -= Recommendable.redis.zscore(similarity_set, r).to_f }
-      
+
+          liked_by, disliked_by = object.send :create_recommendable_sets
+          rated_by = Recommendable.redis.scard(liked_by) + Recommendable.redis.scard(disliked_by)
+          similarity_sum = 0.0
+          prediction = 0.0
+
+        
+          Recommendable.redis.smembers(liked_by).inject(similarity_sum) { |sum, r| sum += Recommendable.redis.zscore(similarity_set, r).to_f }
+          Recommendable.redis.smembers(disliked_by).inject(similarity_sum) { |sum, r| sum -= Recommendable.redis.zscore(similarity_set, r).to_f }
+
+
         prediction = similarity_sum / rated_by.to_f
         
         object.send :destroy_recommendable_sets
