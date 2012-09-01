@@ -1,8 +1,59 @@
 Changelog
 =========
 
-0.2.0 (current version)
+1.1.7 (Current version)
 -----------------------
+* Fix #50, a method that was forgotten to time during the ignoreable => ignorable typo update
+
+1.1.6
+-----
+* Minor code cleanup for my benefit
+
+1.1.5
+-----
+* Fix #47, a problem where models could not recommend themselves
+
+1.1.4
+-----
+* Fix #41, a problem where Resque rake tasks were required regardless of whether or not it was bundled
+* Fix #46 by adding UniqueJob middleware for Sidekiq.
+* Added caches for an item's number of likes and dislikes received
+
+1.1.3
+-----
+* Update Redis.
+
+1.1.2
+-----
+* Fix #38, a problem with enqueueing users based on updating the score of a recommendable record
+
+1.1.1
+-----
+* Support for Sidekiq, Resque, DelayedJob and Rails::Queueing (issue #28)
+  * You must manually bundle Sidekiq, Resque, or DelayedJob. Rails::Queueing is available as a fallback for Rails 4.x
+* Use [apotonick/hooks](https://github.com/apotonick/hooks) to implement callbacks (issue #25). See the [detailed README](http://davidcelis.com/recommendable) for more info on usage.
+
+1.0.0
+-----
+* Dynamic finders now return ActiveRecord::Relations! This means you can chain other ActiveRecord query methods like so:
+
+```ruby
+current_user.recommended_posts.where(:category => "technology")
+current_user.liked_movies.limit(10)
+current_user.stashed_books.where(:author => "Cormac McCarthy")
+current_user.disliked_shows.joins(:cast_members).where('cast_members.name = Kim Kardashian')
+```
+
+* You can now specify a count for `User#recommendations`:
+
+```ruby
+current_user.recommendations(10)
+```
+
+* Bug fixes
+
+0.2.0
+-----
 * NOTE: This release is NOT backwards compatible. Please migrate your databases:
 
 ```
