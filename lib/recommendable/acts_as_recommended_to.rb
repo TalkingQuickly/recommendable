@@ -96,7 +96,7 @@ module Recommendable
       # @param [Object] object the object you want self to like.
       # @return true if object has been liked
       # @raise [UnrecommendableError] if you have not declared the passed object's model to `act_as_recommendable`
-      def like object
+      def rr_like object
         raise UnrecommendableError unless object.recommendable?
         return if likes? object
 
@@ -177,7 +177,7 @@ module Recommendable
       # @param [Object] object the object you want self to dislike.
       # @return true if object has been disliked
       # @raise [UnrecommendableError] if you have not declared the passed object's model to `act_as_recommendable`
-      def dislike object
+      def rr_dislike object
         raise UnrecommendableError unless object.recommendable?
         return if dislikes? object
         
