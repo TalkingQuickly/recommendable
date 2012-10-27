@@ -32,7 +32,8 @@ module Recommendable
           define_hooks :before_like, :after_like, :before_unlike, :after_unlike,
                        :before_dislike, :after_dislike, :before_undislike, :after_undislike,
                        :before_stash, :after_stash, :before_unstash, :after_unstash,
-                       :before_ignore, :after_ignore, :before_unignore, :after_unignore
+                       :before_ignore, :after_ignore, :before_unignore, :after_unignore,
+                       :after_rec_generation
 
           %w(like dislike ignore).each do |action|
             send "before_#{action}", lambda { |obj| completely_unrecommend obj }
@@ -680,6 +681,7 @@ module Recommendable
       # @private
       def update_recommendations
         Recommendable.recommendable_classes.each { |klass| update_recommendations_for klass }
+        run_hook :after_rec_generation
       end
       
       # Used internally to update self's prediction values across a single
